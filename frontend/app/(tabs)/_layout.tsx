@@ -23,42 +23,42 @@ export default function TabsLayout() {
           name="index" 
           options={{ 
             title: 'Inicio', 
-            tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} /> 
+            tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color as string} /> 
           }} 
         />
         <Tabs.Screen 
           name="habits" 
           options={{ 
             title: 'Hábitos', 
-            tabBarIcon: ({ color }) => <Ionicons name="calendar" size={24} color={color} /> 
+            tabBarIcon: ({ color }) => <Ionicons name="calendar" size={24} color={color as string} /> 
           }} 
         />
         <Tabs.Screen 
           name="missions" 
           options={{ 
             title: 'Misiones', 
-            tabBarIcon: ({ color }) => <Ionicons name="rocket" size={24} color={color} /> 
+            tabBarIcon: ({ color }) => <Ionicons name="rocket" size={24} color={color as string} /> 
           }} 
         />
         <Tabs.Screen 
           name="lessons" 
           options={{ 
             title: 'Lecciones', 
-            tabBarIcon: ({ color }) => <Ionicons name="book" size={24} color={color} /> 
+            tabBarIcon: ({ color }) => <Ionicons name="book" size={24} color={color as string} /> 
           }} 
         />
         <Tabs.Screen 
           name="roleplay" 
           options={{ 
             title: 'Simulador', 
-            tabBarIcon: ({ color }) => <Ionicons name="chatbubbles" size={24} color={color} /> 
+            tabBarIcon: ({ color }) => <Ionicons name="chatbubbles" size={24} color={color as string} /> 
           }} 
         />
         <Tabs.Screen 
           name="trash" 
           options={{ 
             title: 'Desahogo', 
-            tabBarIcon: ({ color }) => <Ionicons name="trash" size={24} color={color} /> 
+            tabBarIcon: ({ color }) => <Ionicons name="trash" size={24} color={color as string} /> 
           }} 
         />
       </Tabs>
