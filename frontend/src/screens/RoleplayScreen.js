@@ -3,7 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator,
 import { supabase } from '../supabase';
 import { completeMission } from '../services/missionService';
 
-const GEMINI_API_KEY = 'AQ.Ab8RN6IWyBl9jrNTwao1IFSaCRhtGvnJDLZ4E_dZ-EDTalzG0A';
+// Lectura segura desde el archivo .env y secretos de EAS
+const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 
 const BANCO_ESCENARIOS = [
   "Un integrante de tu equipo no hizo su parte del trabajo y te pide que pongas su nombre minutos antes de la entrega. ¿Qué le dices?",
@@ -57,6 +58,12 @@ export default function RoleplayScreen() {
 
   async function evaluarRespuesta() {
     if (!respuesta.trim()) return;
+
+    if (!GEMINI_API_KEY) {
+      Alert.alert('Error de Configuración', 'No se encontró EXPO_PUBLIC_GEMINI_API_KEY. Reinicia Expo con: npx expo start -c');
+      return;
+    }
+
     setLoading(true);
 
     const prompt = `Actúa como un evaluador de habilidades blandas (comunicación asertiva, negociación y manejo de conflictos cotidianos).
@@ -65,34 +72,64 @@ export default function RoleplayScreen() {
     Evalúa la asertividad, empatía y resolución de conflictos. Responde ÚNICAMENTE con un objeto JSON válido (sin bloques de código ni markdown) con esta estructura exacta:
     {"puntaje": (número del 1 al 10), "feedback": "(consejo directo de máximo 2 líneas)", "xp": (número entre 5 y 30 según su desempeño)}`;
 
+    // gemini-3.5-flash como principal, con respaldo inmediato ante errores 503
+    const modelos = ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+    let data = null;
+    let exito = false;
+
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-          })
+      for (const modelo of modelos) {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: "application/json" }
+            })
+          }
+        );
+
+        data = await response.json();
+
+        if (response.ok) {
+          exito = true;
+          break;
         }
-      );
 
-      const data = await response.json();
+        // Si el modelo principal tiene alta demanda (503), salta automáticamente al respaldo
+        if (response.status === 503) {
+          console.warn(`Modelo ${modelo} saturado (503). Intentando fallback...`);
+          continue;
+        } else {
+          break;
+        }
+      }
 
-      if (!response.ok) {
+      if (!exito) {
         console.error("ERROR REAL DE GOOGLE:", data);
-        Alert.alert('Error de API', 'Revisa la terminal de Expo para ver el motivo del rechazo.');
+        Alert.alert('Servidor ocupado', data?.error?.message || 'Alta demanda en los servidores de IA. Intenta en unos segundos.');
         setLoading(false);
         return;
       }
 
-      const resultadoJSON = JSON.parse(data.candidates[0].content.parts[0].text);
+      const textoRespuesta = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!textoRespuesta) {
+        throw new Error('Respuesta vacía del modelo de IA.');
+      }
+
+      const resultadoJSON = JSON.parse(textoRespuesta);
       setEvaluacion(resultadoJSON);
 
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: profile } = await supabase.from('profiles').select('xp_total').eq('id', user.id).single();
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('xp_total')
+          .eq('id', user.id)
+          .maybeSingle();
+
         await completeMission(user.id, resultadoJSON.xp, profile?.xp_total || 0);
       }
     } catch (error) {

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "CoreX",
-    "slug": "corex",
+    "slug": "frontend",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/imagen.png",
@@ -49,6 +49,7 @@
       "eas": {
         "projectId": "654b8ad1-072e-4643-852f-66f6329a02a8"
       }
-    }
+    },
+    "owner": "adrian441"
   }
 }

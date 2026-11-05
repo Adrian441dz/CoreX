@@ -6,11 +6,26 @@ import { fetchUserProfile } from '../services/userService';
 import { fetchHabits, toggleHabit } from '../services/habitService';
 import { completeMission } from '../services/missionService';
 
+// Calcula YYYY-MM-DD según el reloj local del teléfono (se reinicia exactamente a las 00:00 hrs)
+const getLocalToday = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 export default function DashboardScreen() {
   const [profile, setProfile] = useState(null);
   const [habits, setHabits] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState(null); // Estado agregado para el ID
+  const [userId, setUserId] = useState(null);
+
+  // Normaliza los hábitos para que dependan de la fecha local y no de un booleano estático
+  const normalizeHabitsForToday = (rawHabits) => {
+    const today = getLocalToday();
+    return (rawHabits || []).map((h) => ({
+      ...h,
+      completado_hoy: h.ultima_fecha_completado?.slice(0, 10) === today,
+    }));
+  };
 
   useEffect(() => {
     let profileChannel;
@@ -19,13 +34,13 @@ export default function DashboardScreen() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      setUserId(user.id); // Guardamos el ID del usuario
+      setUserId(user.id);
 
       const userProfile = await fetchUserProfile(user.id);
       const userHabits = await fetchHabits(user.id);
       
       setProfile(userProfile);
-      setHabits(userHabits);
+      setHabits(normalizeHabitsForToday(userHabits));
       setLoading(false);
 
       profileChannel = supabase
@@ -44,37 +59,47 @@ export default function DashboardScreen() {
       if (profileChannel) supabase.removeChannel(profileChannel);
     };
   }, []);
+
   useFocusEffect(
     useCallback(() => {
       async function refreshData() {
         if (!userId) return;
         
         const userProfile = await fetchUserProfile(userId);
-        const userHabits = await fetchHabits(userId); // <- Agregamos la recarga de hábitos
+        const userHabits = await fetchHabits(userId);
         
         setProfile(userProfile);
-        setHabits(userHabits);
+        setHabits(normalizeHabitsForToday(userHabits));
       }
       refreshData();
     }, [userId])
   );
 
   const handleToggleHabit = async (habit) => {
-    if (habit.completado_hoy) {
+    const today = getLocalToday();
+    const isCompletedToday = habit.ultima_fecha_completado?.slice(0, 10) === today;
+
+    if (isCompletedToday) {
       return Alert.alert('Completado', 'Ya cumpliste este hábito hoy. Vuelve mañana.');
     }
+
+    // Pasamos false explícitamente para forzar el marcado del nuevo día
     const updated = await toggleHabit(
       habit.id, 
-      habit.completado_hoy, 
+      false, 
       habit.racha_actual, 
       habit.ultima_fecha_completado
     );
     
     if (updated) {
-      setHabits((prev) => prev.map((h) => (h.id === habit.id ? updated : h)));
+      const normalizedUpdated = {
+        ...updated,
+        completado_hoy: updated.ultima_fecha_completado?.slice(0, 10) === today || updated.completado_hoy,
+      };
+
+      setHabits((prev) => prev.map((h) => (h.id === habit.id ? normalizedUpdated : h)));
       
-      // La suma de XP se realiza aquí, donde habit y updated existen
-      if (!habit.completado_hoy && updated.completado_hoy) {
+      if (normalizedUpdated.completado_hoy) {
         await completeMission(userId, 10, profile?.xp_total || 0);
       }
     }
@@ -138,10 +163,8 @@ export default function DashboardScreen() {
                 {habit.titulo}
               </Text>
               <View style={styles.metaRow}>
-                <Text style={styles.habitMeta}>🔥 Racha: {habit.racha_actual || 0}</Text>
-                <Text style={styles.habitMeta}> • </Text>
-                <Text style={styles.habitMeta}>❤️ {habit.vidas_mes} Vidas</Text>
-                <Text style={styles.habitMeta}> • </Text>
+                <Text style={styles.habitMeta}>🔥 Racha: {habit.racha_actual || 0}  •  </Text>
+                <Text style={styles.habitMeta}>❤️ {habit.vidas_mes} Vidas  •  </Text>
                 <Text style={[styles.habitMeta, { color: habit.tipo === 'bueno' ? '#4ade80' : '#ef4444' }]}>
                   {habit.tipo.toUpperCase()}
                 </Text>
@@ -157,7 +180,7 @@ export default function DashboardScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#121212' },
-  content: { padding: 16, paddingTop: 40 },
+  content: { padding: 16 },
   centered: { justifyContent: 'center', alignItems: 'center' },
   headerRowMaster: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   screenTitle: { color: '#4ade80', fontSize: 28, fontWeight: '900' },

@@ -9,7 +9,7 @@ dist/
 web-build/
 expo-env.d.ts
 
-# Native
+# Native & Binaries
 .kotlin/
 *.orig.*
 *.jks
@@ -17,6 +17,8 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+*.apk
+*.aab
 
 # Metro
 .metro-health-check*
@@ -26,17 +28,20 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
-# macOS
+# OS & IDEs
 .DS_Store
+Thumbs.db
+.vscode/
 *.pem
 
-# local env files
-.env*.local
+# Environment variables (Blindaje total de API Keys)
+.env
+.env.*
+*.env
+!.env.example
 
 # typescript
 *.tsbuildinfo
-
-example
 
 # generated native folders
 /ios
