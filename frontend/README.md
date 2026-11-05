@@ -1,56 +1,24 @@
-# Welcome to your Expo app 👋
+# 🚀 CoreX — Gamified Soft Skills & Habit Tracker
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicación móvil Full-Stack diseñada para que estudiantes de ingeniería y perfiles técnicos desarrollen habilidades blandas (comunicación asertiva, liderazgo y manejo emocional) mediante mecánicas de gamificación RPG y simulación con Inteligencia Artificial.
 
-## Get started
+## 🛠️ Stack Tecnológico y Arquitectura
+* **Frontend Móvil:** React Native con Expo Router (Navegación basada en archivos y manejo de estado reactivo).
+* **Backend & Base de Datos:** Supabase (PostgreSQL) con suscripciones en tiempo real (*Write-Ahead Logging* / `postgres_changes`).
+* **Seguridad en Base de Datos (RLS):** Políticas *Row Level Security* nativas en PostgreSQL (`auth.uid() = user_id`) y *Triggers* en `PL/pgSQL` para auto-aprovisionamiento seguro de perfiles.
+* **Inteligencia Artificial Resiliente:** Integración con Google Gemini (`gemini-3.5-flash`) implementando un patrón de *Automatic Model Fallback* ante saturación de servidores (HTTP 503).
 
-1. Install dependencies
+## 🧩 Módulos Principales (MVP)
+1. **Tracker de Hábitos & Sistema RPG:** Registro de hábitos (adquirir/erradicar) con reinicio automático calculado a medianoche local (`00:00 hrs`), sistema de vidas mensuales, rachas y barra de experiencia (XP/Niveles).
+2. **Simulador IA de Conversaciones Difíciles:** Entrenamiento de negociación y resolución de conflictos evaluado en tiempo real por IA con retorno estructurado en JSON.
+3. **Microlecciones & Misiones IRL (*In Real Life*):** Retos prácticos en el mundo real recompensados con XP.
+4. **Basurero Emocional (Arquitectura Zero-Data Retention):** Espacio de desahogo nocturno diseñado bajo privacidad estricta por diseño; el texto vive exclusivamente en la memoria RAM volátil del dispositivo (`useState`) y se purga permanentemente al confirmar, sin ejecutar `INSERT` en SQL ni transitar por la red.
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## ⚙️ Instalación Local
+1. Clonar el repositorio:
+   `git clone https://github.com/Adrian441dz/corex.git`
+2. Instalar dependencias:
+   `cd frontend && npm install`
+3. Configurar variables de entorno copiando `.env.example` a `.env`.
+4. Iniciar servidor limpiando caché:
+   `npx expo start -c`
