@@ -73,7 +73,7 @@ export default function RoleplayScreen() {
     {"puntaje": (número del 1 al 10), "feedback": "(consejo directo de máximo 2 líneas)", "xp": (número entre 5 y 30 según su desempeño)}`;
 
     // gemini-3.5-flash como principal, con respaldo inmediato ante errores 503
-    const modelos = ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+    const modelos = ['gemini-3.5-flash', 'gemini-3.0-flash', 'gemini-2.5-flash'];
     let data = null;
     let exito = false;
 
